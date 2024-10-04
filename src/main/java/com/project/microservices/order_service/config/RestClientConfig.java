@@ -1,7 +1,9 @@
 package com.project.microservices.order_service.config;
 
 import com.project.microservices.order_service.client.InventoryClient;
+import io.micrometer.observation.ObservationRegistry;
 import org.apache.http.protocol.HttpService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.ClientHttpRequestFactories;
 import org.springframework.boot.web.client.ClientHttpRequestFactorySettings;
@@ -19,12 +21,15 @@ public class RestClientConfig {
 
     @Value("${inventory.url}")
     private String inventoryServiceUrl;
+    @Autowired
+    private ObservationRegistry observationRegistry;
 
     @Bean
     public InventoryClient inventoryClient(){
         RestClient restClient = RestClient.builder()
                 .baseUrl(inventoryServiceUrl)
                 .requestFactory(getClientRequestFactory())
+                .observationRegistry(observationRegistry)
                 .build();
         var restClientAdapter = RestClientAdapter.create(restClient);
         var httpServiceProxyFactory = HttpServiceProxyFactory.builderFor(restClientAdapter).build();
